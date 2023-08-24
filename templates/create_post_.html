@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Создать новый пост</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <style>
+
+
+
+/* Переменные для светлой и темной темы */
+:root {
+    /* Светлая тема */
+    --backgroundColor-light: #ffffff;
+    --headerColor-light: #333333;
+    --textColor-light: #555555;
+    --inputBorderColor-light: rgba(0, 0, 0, 0.15);
+    --submitButtonBackground-light: #333333;
+
+    /* Темная тема */
+    --backgroundColor-dark: #181818;
+    --headerColor-dark: #eaeaea;
+    --textColor-dark: #b0b0b0;
+    --inputBorderColor-dark: rgba(255, 255, 255, 0.15);
+    --submitButtonBackground-dark: #b084f4;
+}
+
+body {
+    /* Значения по умолчанию (светлая тема) */
+    --backgroundColor: var(--backgroundColor-light);
+    --headerColor: var(--headerColor-light);
+    --textColor: var(--textColor-light);
+    --inputBorderColor: var(--inputBorderColor-light);
+    --submitButtonBackground: var(--submitButtonBackground-light);
+}
+
+body.dark-mode {
+    /* Значения для темной темы */
+    --backgroundColor: var(--backgroundColor-dark);
+    --headerColor: var(--headerColor-dark);
+    --textColor: var(--textColor-dark);
+    --inputBorderColor: var(--inputBorderColor-dark);
+    --submitButtonBackground: var(--submitButtonBackground-dark);
+}
+
+/* Основные стили темной темы */
+body.dark-mode {
+    background-color: #181818; /* Фон страницы */
+    color: #eaeaea; /* Основной цвет текста */
+    font-family: 'Arial', sans-serif; /* Современный шрифт (замените на ваш выбор) */
+    line-height: 1.6; /* Расстояние между строками */
+}
+
+/* Заголовки */
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+    color: #ffffff; /* Цвет заголовков */
+    font-weight: bold; /* Жирность текста */
+    margin-bottom: 1em; /* Отступ снизу */
+}
+
+body.dark-mode h1 { font-size: 2em; }
+body.dark-mode h2 { font-size: 1.75em; }
+body.dark-mode h3 { font-size: 1.5em; }
+
+/* Ссылки */
+body.dark-mode a {
+    color: #b084f4; /* Цвет акцентов для ссылок */
+    text-decoration: none; /* Удаление подчеркивания */
+    transition: color 0.3s ease; /* Плавное изменение цвета при наведении */
+}
+
+body.dark-mode a:hover {
+    color: #d4a8ff; /* Цвет ссылки при наведении */
+}
+
+/* Кнопки */
+body.dark-mode button {
+    background-color: #b084f4; /* Цвет фона кнопки */
+    color: #ffffff; /* Цвет текста кнопки */
+    border: none; /* Удаление рамки */
+    padding: 10px 15px; /* Отступы внутри кнопки */
+    border-radius: 5px; /* Скругление углов */
+    cursor: pointer; /* Иконка руки при наведении */
+    transition: background-color 0.3s ease; /* Плавное изменение цвета фона при наведении */
+}
+
+body.dark-mode button:hover {
+    background-color: #d4a8ff; /* Цвет фона кнопки при наведении */
+}
+
+/* Элементы интерфейса и контейнеры */
+body.dark-mode .container, body.dark-mode .box, body.dark-mode .modal {
+    background-color: #222222; /* Фоновый цвет для контейнеров */
+    padding: 20px; /* Отступы внутри контейнера */
+    border-radius: 8px; /* Скругление углов */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Тень */
+}
+
+/* Подсказки и акценты */
+body.dark-mode .tooltip, body.dark-mode .highlight {
+    background-color: #b084f4; /* Фоновый цвет для подсказок и акцентов */
+    color: #ffffff; /* Цвет текста для подсказок и акцентов */
+    border-radius: 5px; /* Скругление углов */
+    padding: 5px 10px; /* Отступы внутри */
+}
+
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    background-color: var(--backgroundColor);
+    color: var(--headerColor);
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-x: hidden;
+            min-height: 100vh;
+        /* делает содержимое body прокручиваемым */
+        overflow-y: auto;
+            position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    position: fixed;
+    width: 100%;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+            min-height: 100vh;
+        /* делает содержимое body прокручиваемым */
+        overflow-y: auto;
+
+            position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+form#post-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin: 10px 0;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+label:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+textarea, input[type="text"] {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus, textarea:focus {
+    outline: none;
+    border-color: var(--headerColor);
+}
+
+input[type="submit"] {
+    display: block;
+    margin: 20px auto;
+    padding: 8px 16px;
+    background-color: var(--headerColor);
+    color: var(--backgroundColor);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+#button-form {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+    form#post-form {
+        padding: 10px;
+    }
+}
+
+
+textarea, input[type="text"] {
+    border: 1px solid var(--inputBorderColor);
+}
+
+input[type="text"]:focus, textarea:focus {
+    border-color: var(--headerColor);
+}
+
+input[type="submit"] {
+    background-color: var(--submitButtonBackground);
+}
+
+input[type="submit"]:hover {
+    background-color: rgba(176, 132, 244, 0.7); /* Темное выделение для кнопки при наведении в обоих режимах */
+}
+
+    </style>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.style.height = window.innerHeight + 'px';
+
+        if (window.Telegram && window.Telegram.WebApp) {
+            if (!window.Telegram.WebApp.isExpanded) {
+                window.Telegram.WebApp.expand();
+            }
+
+            console.log(`Telegram Bot API version: ${window.Telegram.WebApp.version}`);
+            console.log(`Telegram platform: ${window.Telegram.WebApp.platform}`);
+            console.log(`Telegram color scheme: ${window.Telegram.WebApp.colorScheme}`);
+        } else {
+            console.warn('Telegram WebApp JS is not loaded properly.');
+        }
+
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+        window.addEventListener('resize', () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const userId = params.get('user_id');
+        console.log(`User ID: ${userId}`);
+
+        if (!userId) {
+            alert('user_id is missing!');
+            return;
+        }
+
+        const form = document.querySelector('form');
+        form.action = `/submit_post/?user_id=${userId}`;
+        console.log(`Form action: ${form.action}`);
+
+        fetch(`/channels/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                const channelSelect = document.querySelector('#channel');
+                data.forEach(channel => {
+                    const option = document.createElement('option');
+                    option.value = channel;
+                    option.text = channel;
+                    channelSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        const addButtonCheckbox = document.querySelector('#add-buttons');
+        const buttonForm = document.querySelector('#button-form');
+
+        addButtonCheckbox.addEventListener('change', (e) => {
+            const displayStyle = e.target.checked ? 'block' : 'none';
+            buttonForm.style.display = displayStyle;
+
+            // Сдвиг страницы вниз, когда форма отображается
+            if(e.target.checked) {
+                buttonForm.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        window.copyToClipboard = function(elementId) {
+            const el = document.createElement('textarea');
+            let text = "";
+            text = document.querySelector(`#${elementId} textarea`).value;
+
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            alert('Примеры скопированы в буфер обмена!');
+        };
+
+
+                // Restore form data
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            const elem = document.querySelector(`[name="${key}"]`);
+            if (elem) {
+                if (elem.type === 'checkbox') {
+                    elem.checked = sessionStorage.getItem(key) === 'on';
+                } else {
+                    elem.value = sessionStorage.getItem(key);
+                }
+            }
+        }
+
+        // Restore button form data
+        const buttonRowsDataStr = sessionStorage.getItem('buttonRows');
+        if (buttonRowsDataStr) {
+            const buttonRowsData = JSON.parse(buttonRowsDataStr);
+            buttonRowsData.forEach((rowData, i) => {
+                let rowElem;
+                if (i === 0) {
+                    rowElem = buttonForm.querySelector('.button-row');
+                } else {
+                    rowElem = buttonForm.querySelector('.button-row').cloneNode(true);
+                    buttonForm.insertBefore(rowElem, buttonAddRow);
+                }
+                rowData.forEach((columnData, j) => {
+                    const columnElem = rowElem.querySelectorAll('div')[j] || rowElem.querySelector('div').cloneNode(true);
+                    const nameInput = columnElem.querySelector('input[name="button-name"]');
+                    const linkInput = columnElem.querySelector('input[name="button-link"]');
+                    nameInput.value = columnData[0];
+                    linkInput.value = columnData[1];
+                    if (j === 0) {
+                        rowElem.replaceChild(columnElem, rowElem.querySelector('div'));
+                    } else {
+                        rowElem.insertBefore(columnElem, rowElem.querySelector('.button-add-column'));
+                    }
+                });
+            });
+        }
+
+        form.addEventListener('submit', function(e) {
+            // Prevent form from submitting normally
+            e.preventDefault();
+
+            // Prepare data to be sent
+            const formData = new FormData(form);
+
+            // Check if any channel is selected
+            const channelSelect = document.querySelector('#channel');
+            if (channelSelect.selectedOptions.length === 0) {
+                alert('Выберите хотя бы один канал!');
+                return;
+            }
+
+            const data = {};
+            for (let [key, value] of formData) {
+                data[key] = value;
+            }
+
+            console.log('Sending data:', data); // Log the data being sent
+
+            // Send a fetch request with the form data
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the JSON response here
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                // Handle errors here
+                console.error('Error:', error);
+            });
+        });
+
+window.addEventListener('resize', () => {
+    const activeElement = document.activeElement;
+    if (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA") {
+        activeElement.scrollIntoView();
+    }
+});
+
+const initialViewportHeight = window.innerHeight;
+
+window.addEventListener('resize', () => {
+    if (window.innerHeight < initialViewportHeight) {
+        document.body.style.height = (initialViewportHeight + (initialViewportHeight - window.innerHeight)) + 'px';
+    } else {
+        document.body.style.height = '100%';
+    }
+});
+
+
+    });
+
+
+</script>
+
+
+
+</head>
+<body>
+    <form id="post-form" method="POST" enctype="multipart/form-data">
+        <label for="channel">
+            Канал:
+            <select id="channel" name="channel" multiple></select>
+        </label>
+
+        <label for="post">Пост: <textarea name="post"></textarea></label>
+        <label for="hidden-continuation">Скрытое продолжение: <input type="text" name="hidden-continuation"></label>
+                <label for="response">Ответный пост: <input type="text" name="response"></label>
+
+        <label for="add-buttons">Добавить кнопки: <input type="checkbox" id="add-buttons" name="add-buttons"></label>
+
+        <label for="sound">Отправить без звука: <input type="checkbox" name="sound"></label>
+        <label for="comments">Отключить/включить комментарии: <input type="checkbox" name="comments"></label>
+        <label for="pin">Закрепить: <input type="checkbox" name="pin"></label>
+        <label for="copy">Копировать: <input type="checkbox" name="copy_"></label>
+        <label for="share">Поделиться: <input type="checkbox" name="share"></label>
+
+        <div id="button-examples" style="display: none;">
+            <p>Примеры:</p>
+            <textarea readonly>[[(name='Кнопка1', url='https://www.google.co.uk/'), (name='Кнопка2', url='https://www.google.co.uk/')],
+        [(name='Кнопка3', url='https://www.google.co.uk/'), (name='Кнопка4', url='https://www.google.co.uk/')]]</textarea>
+
+            <button onclick="copyToClipboard('button-examples')">Скопировать пример</button>
+        </div>
+
+        <div id="button-form" style="display: none;">
+            <p>Введите данные кнопки в формате: Название кнопки, Ссылка кнопки</p>
+            <input type="text" name="buttons" placeholder="Название кнопки, Ссылка кнопки">
+        </div>
+
+
+        <input type="submit" value="Отправить">
+    </form>
+
+
+
+</body>
+</html>

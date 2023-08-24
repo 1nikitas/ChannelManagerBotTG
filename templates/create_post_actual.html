@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Создать новый пост</title>
+    <style>
+        label {
+            display: block;
+            margin: 10px 0;
+        }
+    </style>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+    // Get the user_id from the URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user_id');
+
+    console.log(`User ID: ${userId}`); // Log the user ID
+
+    if (!userId) {
+        alert('user_id is missing!');
+        return;
+    }
+
+    // Update form action attribute
+    const form = document.querySelector('form');
+    form.action = `/submit_post/?user_id=${userId}`;
+
+    console.log(`Form action: ${form.action}`); // Log the form action
+
+    // Fetch the channels
+    fetch(`/channels/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            const channelSelect = document.querySelector('#channel');
+            data.forEach(channel => {
+                const option = document.createElement('option');
+                option.value = channel; // channel_name
+                option.text = channel; // channel_name
+                channelSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        // Замените строку ввода на большое текстовое поле
+    buttonForm.innerHTML = `
+        <div class="button-row">
+            <textarea name="buttons" placeholder="Введите кнопки в формате 'название кнопки', 'ссылка кнопки'"></textarea>
+        </div>
+    `;
+
+    // Save form data on changes
+    form.addEventListener('input', (e) => {
+        if (e.target.name !== 'media') {
+            sessionStorage.setItem(e.target.name, e.target.value);
+            setTimeout(() => sessionStorage.removeItem(e.target.name), 15 * 60 * 1000);
+        }
+    });
+
+    // Save button form data on changes
+    buttonForm.addEventListener('input', (e) => {
+        const buttonRowsData = Array.from(buttonForm.querySelectorAll('.button-row')).map(row => {
+            return Array.from(row.querySelectorAll('div')).map(column => {
+                const nameInput = column.querySelector('input[name="button-name"]');
+                const linkInput = column.querySelector('input[name="button-link"]');
+                return [nameInput.value, linkInput.value];
+            });
+        });
+        sessionStorage.setItem('buttonRows', JSON.stringify(buttonRowsData));
+        setTimeout(() => sessionStorage.removeItem('buttonRows'), 15 * 60 * 1000);
+    });
+
+    // Restore form data
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        const elem = document.querySelector(`[name="${key}"]`);
+        if (elem) {
+            if (elem.type === 'checkbox') {
+                elem.checked = sessionStorage.getItem(key) === 'on';
+            } else {
+                elem.value = sessionStorage.getItem(key);
+            }
+        }
+    }
+
+    // Restore button form data
+    const buttonRowsDataStr = sessionStorage.getItem('buttonRows');
+    if (buttonRowsDataStr) {
+        const buttonRowsData = JSON.parse(buttonRowsDataStr);
+        buttonRowsData.forEach((rowData, i) => {
+            let rowElem;
+            if (i === 0) {
+                rowElem = buttonForm.querySelector('.button-row');
+            } else {
+                rowElem = buttonForm.querySelector('.button-row').cloneNode(true);
+                buttonForm.insertBefore(rowElem, buttonAddRow);
+            }
+            rowData.forEach((columnData, j) => {
+                const columnElem = rowElem.querySelectorAll('div')[j] || rowElem.querySelector('div').cloneNode(true);
+                const nameInput = columnElem.querySelector('input[name="button-name"]');
+                const linkInput = columnElem.querySelector('input[name="button-link"]');
+                nameInput.value = columnData[0];
+                linkInput.value = columnData[1];
+                if (j === 0) {
+                    rowElem.replaceChild(columnElem, rowElem.querySelector('div'));
+                } else {
+                    rowElem.insertBefore(columnElem, rowElem.querySelector('.button-add-column'));
+                }
+            });
+        });
+    }
+});
+    </script>
+</head>
+<body>
+    <form id="post-form" method="POST" enctype="multipart/form-data">
+        <label for="channel">
+            Канал:
+            <select id="channel" name="channel" multiple></select>
+        </label>
+
+        <label for="post">Пост: <textarea name="post"></textarea></label>
+
+        <label for="media">Медиа:
+            <input type="file" name="media" id="media" multiple>
+        </label>
+
+        <label for="reactions">Реакции: <input type="text" name="reactions"></label>
+        <label for="hidden-continuation">Скрытое продолжение: <input type="text" name="hidden-continuation"></label>
+        <label for="sound">Отправить со звуком: <input type="checkbox" name="sound"></label>
+        <label for="comments">Отключить/включить комментарии: <input type="checkbox" name="comments"></label>
+        <label for="pin">Закрепить: <input type="checkbox" name="pin"></label>
+        <label for="copy">Копировать: <input type="checkbox" name="copy_"></label>
+        <label for="share">Поделиться: <input type="checkbox" name="share"></label>
+        <label for="response">Ответный пост: <input type="checkbox" name="response"></label>
+        <label for="add-buttons">Добавить кнопки: <input type="checkbox" id="add-buttons" name="add-buttons"></label>
+
+        <div id="button-form" style="display: none;">
+            <p>Введите данные кнопки в формате: Название кнопки, Ссылка кнопки</p>
+            <input type="text" name="buttons" placeholder="Название кнопки, Ссылка кнопки">
+        </div>
+
+        <input type="submit" value="Отправить">
+    </form>
+
+
+    <script>
+    // Show/hide button form when the checkbox is clicked
+    const addButtonCheckbox = document.querySelector('#add-buttons');
+    const buttonForm = document.querySelector('#button-form');
+    addButtonCheckbox.addEventListener('change', (e) => {
+        buttonForm.style.display = e.target.checked ? 'block' : 'none';
+    });
+    </script>
+</body>
+</html>

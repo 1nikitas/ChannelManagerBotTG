@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Создать новый пост</title>
+    <style>
+        label {
+            display: block;
+            margin: 10px 0;
+        }
+
+        #media-buttons div,
+        #buttons-container div {
+            margin-bottom: 10px;
+        }
+
+        .button-row {
+            display: flex;
+        }
+    </style>
+<!-- Функции работы с формой -->
+<script>
+    function setupForm(userId) {
+    const form = document.querySelector('form');
+
+    form.addEventListener('change', () => {
+        saveData();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
+        const divs = Array.from(form.querySelectorAll('.button-row > div'));
+        const buttonRowsElems = Array.from(form.querySelectorAll('.button-row'));
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const filesFormData = new FormData();
+            const fileInputs = form.querySelectorAll('input[type="file"]');
+            fileInputs.forEach((input, index) => {
+                for (let i = 0; i < input.files.length; i++) {
+                    filesFormData.append(`media`, input.files[i]);
+                }
+            });
+
+            let fileUploadResponse;
+            try {
+                fileUploadResponse = await fetch(`/upload_media/`, {
+                    method: 'POST',
+                    body: filesFormData,
+                });
+                if (!fileUploadResponse.ok) {
+                    throw new Error('File upload failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                return;
+            }
+
+            const fileUploadData = await fileUploadResponse.json();
+            const media_filenames = fileUploadData.media_filenames;
+
+            const formData = new FormData(form);
+            const postData = {};
+            formData.forEach((value, key) => {
+                if (key.startsWith('button-name') || key.startsWith('button-url')) {
+                    if (value.trim()) { // Only add the button if the value is not empty or whitespace
+                        const buttonRows = postData['buttons'] || [];
+                        const rowIndex = buttonRowsElems.indexOf(form.elements[key].closest('.button-row'));
+                        const columnIndex = divs.indexOf(form.elements[key].closest('div'));
+                        buttonRows[rowIndex] = buttonRows[rowIndex] || [];
+                        buttonRows[rowIndex][columnIndex] = buttonRows[rowIndex][columnIndex] || [];
+                        buttonRows[rowIndex][columnIndex][key === 'button-name' ? 0 : 1] = value;
+                        postData['buttons'] = buttonRows;
+                    }
+                } else {
+                    if (form.elements[key].type === 'checkbox') {
+                        postData[key] = form.elements[key].checked;
+                    } else {
+                        postData[key] = value;
+                    }
+                }
+            });
+
+            postData.media = media_filenames;
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.message) {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+
+    fetch(`/channels/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            const channelSelect = document.querySelector('#channel');
+            data.forEach(channel => {
+                const option = document.createElement('option');
+                option.value = channel;
+                option.text = channel;
+                channelSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+</script>
+
+<!-- Инициализация при загрузке страницы -->
+<script>
+window.onload = function() {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user_id');
+    const form = document.querySelector('form');
+
+    if (!userId) {
+        alert('user_id is missing!');
+        return;
+    }
+
+    form.action = `/submit_post/?user_id=${userId}`;
+
+    setupForm(userId);
+    setupButtons();
+    loadData();
+
+    // Обработчик для добавления кнопок
+    const buttonsContainer = document.querySelector('#buttons-container');
+    const addButtonsCheckbox = document.querySelector('#add-buttons');
+    addButtonsCheckbox.addEventListener('change', () => {
+        buttonsContainer.style.display = addButtonsCheckbox.checked ? 'block' : 'none';
+    });
+
+    const addButtonInRow = document.querySelector('#add-button-in-row');
+    addButtonInRow.addEventListener('click', (e) => {
+        e.preventDefault();
+        addButtonField(buttonsContainer, true);
+    });
+
+    const addButtonInColumn = document.querySelector('#add-button-in-column');
+    addButtonInColumn.addEventListener('click', (e) => {
+        e.preventDefault();
+        addButtonField(buttonsContainer, false);
+    });
+};
+</script>
+
+</head>
+<body>
+    <form action="/submit_post/?user_id=${userId}" method="POST">
+        <label for="channel">
+            Канал:
+            <select id="channel" name="channel" multiple></select>
+        </label>
+
+        <label for="post">Пост: <textarea name="post"></textarea></label>
+
+        <label for="media">Медиа:
+
+        <div><input type="file" name="media" multiple></div>
+        </label>
+
+        <label for="reactions">Реакции: <input type="text" name="reactions"></label>
+        <label for="hidden-continuation">Скрытое продолжение: <input type="text" name="hidden-continuation"></label>
+        <label for="sound">Отправить со звуком: <input type="checkbox" name="sound"></label>
+        <label for="comments">Отключить/включить комментарии: <input type="checkbox" name="comments"></label>
+        <label for="pin">Закрепить: <input type="checkbox" name="pin"></label>
+        <label for="copy">Копировать: <input type="checkbox" name="copy_"></label>
+        <label for="share">Поделиться: <input type="checkbox" name="share"></label>
+
+        <label for="response">Ответный пост: <input type="text" name="response"></label>
+
+
+        <label for="add-buttons">Добавить кнопки: <input type="checkbox" id="add-buttons" name="add-buttons"></label>
+
+        <div id="buttons-container" style="display: none;">
+            <button id="add-button-in-row">Добавить в строку</button>
+            <button id="add-button-in-column">Добавить вниз</button>
+        </div>
+
+        <input type="submit" value="Отправить">
+    </form>
+
+
+
+
+
+
+<!-- Функции работы с кнопками -->
+<script>
+let buttonIndex = 0;
+
+function addButtonField(container, inRow) {
+    buttonIndex += 1;
+    const buttonField = document.createElement('div');
+    buttonField.classList.add('button-field');
+    buttonField.style.flexDirection = inRow ? 'row' : 'column';
+
+    const nameLabel = document.createElement('label');
+    nameLabel.textContent = 'Название: ';
+    const nameInput = document.createElement('input');
+    nameInput.name = `button-name-${buttonIndex}`;
+    nameLabel.appendChild(nameInput);
+    buttonField.appendChild(nameLabel);
+
+    const urlLabel = document.createElement('label');
+    urlLabel.textContent = 'Ссылка: ';
+    const urlInput = document.createElement('input');
+    urlInput.name = `button-url-${buttonIndex}`;
+    urlLabel.appendChild(urlInput);
+    buttonField.appendChild(urlLabel);
+
+    container.appendChild(buttonField);
+}
+
+window.onload = function() {
+    const buttonsContainer = document.querySelector('#buttons-container');
+    const addButtonsCheckbox = document.querySelector('#add-buttons');
+    addButtonsCheckbox.addEventListener('change', () => {
+        buttonsContainer.style.display = addButtonsCheckbox.checked ? 'block' : 'none';
+    });
+
+    const addButtonInRow = document.querySelector('#add-button-in-row');
+    addButtonInRow.addEventListener('click', (e) => {
+        e.preventDefault();
+        addButtonField(buttonsContainer, true);
+    });
+
+    const addButtonInColumn = document.querySelector('#add-button-in-column');
+    addButtonInColumn.addEventListener('click', (e) => {
+        e.preventDefault();
+        addButtonField(buttonsContainer, false);
+    });
+}
+</script>
+
+<!-- Функции работы с локальным хранилищем -->
+<script>
+function saveData() {
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+    const postData = {};
+    const buttonData = [];
+
+    formData.forEach((value, key) => {
+        if (key.startsWith('button-name') || key.startsWith('button-url')) {
+            const buttonIndex = parseInt(key.split('-').pop(), 10) - 1;
+            if (!buttonData[buttonIndex]) {
+                buttonData[buttonIndex] = {};
+            }
+            buttonData[buttonIndex][key.split('-')[1]] = value;
+        } else {
+            postData[key] = value;
+        }
+    });
+
+    if (buttonData.length > 0) {
+        postData.buttonData = buttonData;
+    }
+
+    localStorage.setItem('postData', JSON.stringify(postData));
+}
+
+function loadData() {
+    const savedData = localStorage.getItem('postData');
+    const form = document.querySelector('form');
+    if (!savedData) {
+        return;
+    }
+
+    const postData = JSON.parse(savedData);
+    const buttonsContainer = document.querySelector('#buttons-container');
+    const buttonData = postData.buttonData || [];
+    buttonData.forEach(button => {
+        addButtonField(buttonsContainer, true);
+    });
+
+    Object.keys(postData).forEach(key => {
+        if (key === 'buttonData') {
+            const buttonFields = document.querySelectorAll('.button-field');
+            buttonFields.forEach((buttonField, i) => {
+                const nameInput = buttonField.querySelector(`input[name="button-name-${i + 1}"]`);
+                const urlInput = buttonField.querySelector(`input[name="button-url-${i + 1}"]`);
+                const button = buttonData[i];
+                if (button) {
+                    nameInput.value = button.name || '';
+                    urlInput.value = button.url || '';
+                }
+            });
+        } else {
+            const input = form.querySelector(`input[name="${key}"]`);
+            if (input) {
+                input.value = postData[key];
+            }
+        }
+    });
+}
+
+</script>
+
+</body>
+</html>
